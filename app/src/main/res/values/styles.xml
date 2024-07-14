@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="http://schemas.android.com/apk/res-auto">
+    <style name="AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="android:outlineAmbientShadowColor" ns1:ignore="NewApi">@android:color/black</item>
+        <item name="android:outlineSpotShadowColor" ns1:ignore="NewApi">@android:color/black</item>
+        <item name="android:background">#FFFFFF</item>
+    </style>
+
+</resources>
