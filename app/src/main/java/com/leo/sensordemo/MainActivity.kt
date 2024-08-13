@@ -1,6 +1,5 @@
 package com.leo.sensordemo
 
-import android.content.Context.SENSOR_SERVICE
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -9,7 +8,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.leo.sensordemo.databinding.ActivityMainBinding
@@ -42,6 +40,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     var rotationVectorSensor :Sensor? = null
     //磁力传感器
     var magneticSensor :Sensor? = null
+
+    var mPressureSensor: Sensor? = null
 
     val accValues = FloatArray(3);
     val magValues  = FloatArray(3);
@@ -87,14 +87,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
+        mPressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        if (mPressureSensor == null) {
+            binding.tvPressure.text = "气压: 不支持气压计"
+        }
     }
 
     fun registerSensor() {
-        sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_GAME);
-        sensorManager.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_GAME);
-        sensorManager.registerListener(this, rotationVectorSensor, SensorManager.SENSOR_DELAY_GAME);
-        sensorManager.registerListener(this, magneticSensor, SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, rotationVectorSensor, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, magneticSensor, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(this, mPressureSensor, SensorManager.SENSOR_DELAY_UI)
     }
     fun unregisterSensor() {
         sensorManager.unregisterListener(this)
@@ -113,6 +117,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
+        if (event.sensor.type == Sensor.TYPE_PRESSURE) {
+            val pressure = event.values[0].toFixed(10F);
+            binding.tvPressure.text = "气压\n${pressure}hPa"
+            val altitude = calculateAltitude(pressure);
+            binding.tvAltitude.text = "海拔\n${altitude.toFixed(10F)}米"
+
+            return;
+        }
         val x = event.values[0].toFixed();
         val y = event.values[1].toFixed();
         val z = event.values[2].toFixed();
@@ -146,8 +158,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             binding.tvAzimuth.text = "航向角\n${azimuth.toFixed()}°"
             binding.tvPitch.text = "倾角\n${pitch.toFixed()}°"
             binding.tvRoll.text = "滚动角\n${roll.toFixed()}°"
-
-
             binding.tvMagValueX.text = "x:${x.toFixed()}"
             binding.tvMagValueY.text = "y:${y.toFixed()}"
             binding.tvMagValueZ.text = "z:${z.toFixed()}"
@@ -167,11 +177,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     }
 
-    fun Float.toFixed():Float{
-        return Math.round(this * 1000)/1000F;
+
+    fun calculateAltitude(currentPressure: Float): Float {
+        val standardPressure = 1013.25 // 标准大气压，单位为 hPa
+        val altitude = 44330.0 * (1 - Math.pow(currentPressure / standardPressure, 1 / 5.255))
+        return altitude.toFloat();
     }
-    fun Double.toFixed():Double{
-        return Math.round(this * 1000)/1000.0;
+
+    fun Float.toFixed(digit:Float = 1000F):Float{
+        return Math.round(this * digit)/digit;
+    }
+    fun Double.toFixed(digit:Double = 1000.0):Double{
+        return Math.round(this * digit)/digit;
     }
 
 

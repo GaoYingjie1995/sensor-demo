@@ -225,12 +225,36 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
+    <LinearLayout
+        android:id="@+id/ll_pressure"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        app:layout_constraintTop_toBottomOf="@id/ll_orientation">
+        <TextView
+            android:id="@+id/tv_pressure"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"
+            android:text="气压: "/>
+
+        <TextView
+            android:id="@+id/tv_altitude"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:text="海拔: "/>
+
+    </LinearLayout>
+
+
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/ll_orientation"
-        app:layout_constraintBottom_toTopOf="@id/bt_start">
+        app:layout_constraintTop_toBottomOf="@id/ll_pressure"
+        app:layout_constraintBottom_toTopOf="@id/bt_start"
+        android:layout_marginTop="10dp">
 
         <TextView
             android:id="@+id/tv_sensor_name"
