@@ -94,11 +94,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun registerSensor() {
-        sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, rotationVectorSensor, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, magneticSensor, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(this, mPressureSensor, SensorManager.SENSOR_DELAY_UI)
+        sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, rotationVectorSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, magneticSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, mPressureSensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
     fun unregisterSensor() {
         sensorManager.unregisterListener(this)
@@ -118,10 +118,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_PRESSURE) {
-            val pressure = event.values[0].toFixed(10F);
+            val pressure = event.values[0].toFixed(100F);
+            pressure/SensorManager.PRESSURE_STANDARD_ATMOSPHERE;
             binding.tvPressure.text = "气压\n${pressure}hPa"
             val altitude = calculateAltitude(pressure);
-            binding.tvAltitude.text = "海拔\n${altitude.toFixed(10F)}米"
+            binding.tvAltitude.text = "海拔\n${altitude.toFixed(100F)}米"
 
             return;
         }
@@ -177,12 +178,28 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     }
 
-
+    /**
+     *  barometric 公式
+     *
+     */
     fun calculateAltitude(currentPressure: Float): Float {
         val standardPressure = 1013.25 // 标准大气压，单位为 hPa
         val altitude = 44330.0 * (1 - Math.pow(currentPressure / standardPressure, 1 / 5.255))
         return altitude.toFloat();
     }
+
+    /**
+     * Hypsometric算法计算海拔高度
+     */
+    fun hypsometric(currentPressure:Float, currentTemperature:Float):Float
+    {
+        val standardPressure = 1013.25
+        val altitude = ((Math.pow(standardPressure/currentPressure, 1 / 5.257)) - 1) * (currentTemperature + 273.15) / 0.0065
+        return altitude.toFloat();
+    }
+
+
+
 
     fun Float.toFixed(digit:Float = 1000F):Float{
         return Math.round(this * digit)/digit;
